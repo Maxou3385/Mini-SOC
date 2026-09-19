@@ -10,10 +10,12 @@ def main():
         lines = f.readlines()
 
     for line in lines:
-        
-        if line.strip().split(" ")[2] == "LOGIN_FAILED":
 
-            date, time, _ , username, ip_address = line.strip().split(" ")
+        date, time, event, *data = line.strip().split(" ")
+        
+        if event == "LOGIN_FAILED":
+
+            username, ip_address = data
             if ip_address in dico:
 
                 # Reset if the date is different or if the time difference exceeds the TIME_WINDOW
@@ -27,9 +29,9 @@ def main():
             else:
                 dico[ip_address] = [username, 1, time, date]
 
-        if line.strip().split(" ")[2] == "PORT_SCAN":
+        if event == "PORT_SCAN":
 
-            date, time, _ , ip_address, port = line.strip().split(" ")
+            ip_address, port = data
             print("[WARNING] Port scan detected from "+ip_address)
 
 if __name__ == "__main__":

@@ -21,7 +21,6 @@ def parse_log(line):
 def detect_port_scan(log):
     return {"level": "WARNING", "event": "PORT_SCAN", "ip": log["ip"]}
 
-
 def detect_bruteforce(log):
 
     if log["ip"] in dico:
@@ -34,11 +33,19 @@ def detect_bruteforce(log):
 
             # Check if the number of attempts exceeds MAX_ATTEMPTS
             if dico[log["ip"]][1] >= MAX_ATTEMPTS:
-                return {"level": "ALERT", "event": "LOGIN_FAILED", "ip": log["ip"], "user": dico[log["ip"]][0], "attempts": dico[log["ip"]][1]}
+                return {"level": "ALERT", "event": "BRUTE_FORCE", "ip": log["ip"], "user": dico[log["ip"]][0], "attempts": dico[log["ip"]][1]}
 
     else:
         dico[log["ip"]] = [log["user"], 1, log["time"], log["date"]]
 
+
+def display_alerts(alerts):
+    for alert in alerts:
+        print(f"[{alert['level']}] - {alert['event']} - IP: {alert['ip']}", end="")
+        if alert['event'] == "BRUTE_FORCE":
+            print(f" - User: {alert['user']} - Attempts: {alert['attempts']}")
+        else:
+            print()
 
 def main():
 
@@ -61,7 +68,7 @@ def main():
             if alert is not None:
                 alerts.append(alert)
             
-            
+    display_alerts(alerts)
 
 if __name__ == "__main__":
     main()

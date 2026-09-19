@@ -1,10 +1,14 @@
 from datetime import datetime
 
+# Maximum number of failed login attempts allowed
 MAX_ATTEMPTS = 4
+# Time window for brute-force detection (in seconds)
 TIME_WINDOW = 60
 dico = {} # {ip_address: [username, attempts, first_attempt_time, first_attempt_date]}
 
 def parse_log(line):
+    """Parse a log line and return its data as a dictionary."""
+
     log = {}
     date, time, event, *data  = line.strip().split(" ")
 
@@ -19,9 +23,12 @@ def parse_log(line):
     return log
 
 def detect_port_scan(log):
+    """Detect a port scan and return a warning alert"""
+
     return {"level": "WARNING", "event": "PORT_SCAN", "ip": log["ip"]}
 
 def detect_bruteforce(log):
+    """Detect multiple failed login attempts from the same IP."""
 
     if log["ip"] in dico:
     
@@ -40,6 +47,8 @@ def detect_bruteforce(log):
 
 
 def display_alerts(alerts):
+    """Display all detected security alerts."""
+
     for alert in alerts:
         print(f"[{alert['level']}] - {alert['event']} - IP: {alert['ip']}", end="")
         if alert['event'] == "BRUTE_FORCE":

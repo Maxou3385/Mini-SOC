@@ -19,7 +19,8 @@ def parse_log(line):
     return log
 
 def detect_port_scan(log):
-    print("[WARNING] Port scan detected from "+ log["ip"])
+    return {"level": "WARNING", "event": "PORT_SCAN", "ip": log["ip"]}
+
 
 def detect_bruteforce(log):
 
@@ -33,12 +34,15 @@ def detect_bruteforce(log):
 
             # Check if the number of attempts exceeds MAX_ATTEMPTS
             if dico[log["ip"]][1] >= MAX_ATTEMPTS:
-                print("[ALERT] " +dico[log["ip"]][0]+" from "+log["ip"]+" has failed to login "+str(dico[log["ip"]][1])+" times since "+dico[log["ip"]][3]+" "+dico[log["ip"]][2])
+                return {"level": "ALERT", "event": "LOGIN_FAILED", "ip": log["ip"], "user": dico[log["ip"]][0], "attempts": dico[log["ip"]][1]}
+
     else:
         dico[log["ip"]] = [log["user"], 1, log["time"], log["date"]]
 
 
 def main():
+
+    alerts = []
 
     with open("logs.txt","r") as f:
         lines = f.readlines()
@@ -48,10 +52,14 @@ def main():
         log = parse_log(line)
         
         if log["event"] == "LOGIN_FAILED":
-            detect_bruteforce(log)
+            alert = detect_bruteforce(log)
+            if alert is not None:
+                alerts.append(alert)
 
         elif log["event"] == "PORT_SCAN":
-            detect_port_scan(log)
+            alert = detect_port_scan(log)
+            if alert is not None:
+                alerts.append(alert)
             
             
 
